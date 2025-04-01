@@ -50,6 +50,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          AWS_SECRET_ARN: ${{ secrets.AWS_SECRET_ARN }}
           IMAGE_NAME: ${{ inputs.IMAGE_NAME }}
           CONTAINER_NAME: ${{ inputs.CONTAINER_NAME }}
           PORT: ${{ inputs.PORT }}
@@ -89,8 +90,7 @@ jobs:
             sudo cp ~/ecikeystore.p12 ~/"$PROJECT_NAME"/src/main/resources/ecikeystore.p12
 
             echo "📚 Obteniendo secretos..."
-            echo "$AWS_SECRET_ARN"
-            aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region us-east-1 --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
+            sudo aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region us-east-1 --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
 
             echo "🛠️ Construyendo imagen Docker..."
             sudo docker build -t "$IMAGE_NAME" .
