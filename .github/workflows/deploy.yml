@@ -1,0 +1,86 @@
+name: Centralized Deploy to EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      PROJECT_NAME:
+        description: 'Project folder name on the EC2 instance'
+        required: true
+      IMAGE_NAME:
+        description: 'Docker Image Name'
+        required: true
+      CONTAINER_NAME:
+        description: 'Container Name'
+        required: true
+      PORT:
+        description: 'Port Number'
+        required: true
+      REPO_URL:
+        description: 'Repository URL to clone'
+        required: true
+      BRANCH:
+        description: 'Git branch to deploy'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Se ejecuta en una VM de GitHub Actions
+
+    steps:
+      - name: 🚀 Checkout del repositorio (para disponer de este workflow)
+        uses: actions/checkout@v4
+
+      - name: 📂 Conectar por SSH y desplegar en EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ec2-user
+          IMAGE_NAME: ${{ github.event.inputs.IMAGE_NAME }}
+          CONTAINER_NAME: ${{ github.event.inputs.CONTAINER_NAME }}
+          PORT: ${{ github.event.inputs.PORT }}
+          REPO_URL: ${{ github.event.inputs.REPO_URL }}
+          PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}
+          BRANCH: ${{ github.event.inputs.BRANCH }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $EC2_USER@$EC2_HOST << EOF
+            set -e
+
+            echo "🔄 Actualizando el sistema e instalando Git y Docker..."
+            # Comandos para Amazon Linux; ajusta si usas otro sistema
+            sudo yum update -y
+            sudo yum install -y git docker
+            sudo service docker start
+
+            echo "🚀 Forzando actualización del código..."
+            if [ -d ~/"\$PROJECT_NAME" ]; then
+              cd ~/"\$PROJECT_NAME"
+              git fetch --all
+              git reset --hard origin/\$BRANCH
+            else
+              cd ~
+              git clone "\$REPO_URL" "\$PROJECT_NAME"
+              cd "\$PROJECT_NAME"
+              git checkout \$BRANCH
+            fi
+
+            echo "🔄 Reemplazando el keystore..."
+            cp ~/ecikeystore.p12 ~/"\$PROJECT_NAME"/src/main/resources/ecikeystore.p12
+
+            echo "📚 Obteniendo secretos..."
+            aws secretsmanager get-secret-value --secret-id "${{ secrets.AWS_SECRET_ARN }}" --region us-east-1 --query SecretString --output text  | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' > .env
+
+            echo "🛠️ Construyendo imagen Docker..."
+            docker build -t \$IMAGE_NAME .
+
+            echo "🚫 Deteniendo contenedor previo..."
+            docker stop \$CONTAINER_NAME || true
+            docker rm \$CONTAINER_NAME || true
+
+            echo "🚀 Ejecutando nuevo contenedor..."
+            docker run -d --name \$CONTAINER_NAME --env-file .env -p \$PORT:\$PORT \$IMAGE_NAME
+
+            echo "🎉 Despliegue exitoso en EC2"
+          EOF
