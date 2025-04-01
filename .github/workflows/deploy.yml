@@ -70,16 +70,20 @@ jobs:
             sudo service docker start
 
             echo "🚀 Forzando actualización del código..."
-            if [ -d ~/"\$PROJECT_NAME" ]; then
-              cd ~/"\$PROJECT_NAME"
+            if [ -d ~/"$PROJECT_NAME/.git" ]; then
+              echo "📂 El proyecto ya existe. Actualizando..."
+              cd ~/"$PROJECT_NAME"
               sudo git fetch --all
-              sudo git reset --hard origin/\$BRANCH
+              sudo git reset --hard origin/"$BRANCH"
             else
+              echo "📦 El proyecto no existe o no es un repositorio Git. Clonando..."
               cd ~
-              sudo git clone "\$REPO_URL" "\$PROJECT_NAME"
-              cd "\$PROJECT_NAME"
-              sudo git checkout \$BRANCH
+              sudo rm -rf "$PROJECT_NAME"  # Elimina cualquier carpeta con el mismo nombre
+              sudo git clone "$REPO_URL" "$PROJECT_NAME"
+              cd "$PROJECT_NAME"
+              sudo git checkout "$BRANCH"
             fi
+
 
             echo "🔄 Reemplazando el keystore..."
             sudo cp ~/ecikeystore.p12 ~/"\$PROJECT_NAME"/src/main/resources/ecikeystore.p12
