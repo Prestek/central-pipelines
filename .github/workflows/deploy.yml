@@ -1,7 +1,7 @@
 name: Centralized Deploy to EC2
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       PROJECT_NAME:
         description: 'Project folder name on the EC2 instance'
