@@ -95,11 +95,11 @@ jobs:
             sudo docker build -t "$IMAGE_NAME" .
 
             echo "🚫 Deteniendo contenedor previo..."
-            sudo docker stop \$CONTAINER_NAME || true
-            sudo docker rm \$CONTAINER_NAME || true
+            sudo docker stop "$CONTAINER_NAME" || true
+            sudo docker rm "$CONTAINER_NAME" || true
 
             echo "🚀 Ejecutando nuevo contenedor..."
-            sudo docker run -d --name \$CONTAINER_NAME --env-file .env -p \$PORT:\$PORT \$IMAGE_NAME
+            sudo docker run -d --name "$CONTAINER_NAME" --env-file .env -p "$PORT":"$PORT" "$IMAGE_NAME"
 
             echo "🎉 Despliegue exitoso en EC2"
           EOF
