@@ -18,6 +18,7 @@ on:
       PORT:
         description: 'Port Number'
         required: true
+        type: string
       REPO_URL:
         description: 'Repository URL to clone'
         required: true
