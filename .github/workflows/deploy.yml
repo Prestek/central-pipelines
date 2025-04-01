@@ -6,20 +6,32 @@ on:
       PROJECT_NAME:
         description: 'Project folder name on the EC2 instance'
         required: true
+        type: string
       IMAGE_NAME:
         description: 'Docker Image Name'
         required: true
+        type: string
       CONTAINER_NAME:
         description: 'Container Name'
         required: true
+        type: string
       PORT:
         description: 'Port Number'
         required: true
       REPO_URL:
         description: 'Repository URL to clone'
         required: true
+        type: string
       BRANCH:
         description: 'Git branch to deploy'
+        required: true
+        type: string
+    secrets:
+      EC2_SSH_KEY:
+        required: true
+      EC2_HOST:
+        required: true
+      EC2_USER:
         required: true
 
 jobs:
@@ -35,12 +47,12 @@ jobs:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
-          IMAGE_NAME: ${{ github.event.inputs.IMAGE_NAME }}
-          CONTAINER_NAME: ${{ github.event.inputs.CONTAINER_NAME }}
-          PORT: ${{ github.event.inputs.PORT }}
-          REPO_URL: ${{ github.event.inputs.REPO_URL }}
-          PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}
-          BRANCH: ${{ github.event.inputs.BRANCH }}
+          IMAGE_NAME: ${{ inputs.IMAGE_NAME }}
+          CONTAINER_NAME: ${{ inputs.CONTAINER_NAME }}
+          PORT: ${{ inputs.PORT }}
+          REPO_URL: ${{ inputs.REPO_URL }}
+          PROJECT_NAME: ${{ inputs.PROJECT_NAME }}
+          BRANCH: ${{ inputs.BRANCH }}
         run: |
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
