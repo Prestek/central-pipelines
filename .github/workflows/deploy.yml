@@ -89,7 +89,8 @@ jobs:
             sudo cp ~/ecikeystore.p12 ~/"$PROJECT_NAME"/src/main/resources/ecikeystore.p12
 
             echo "📚 Obteniendo secretos..."
-            sudo aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region us-east-1 --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
+            echo "$AWS_SECRET_ARN"
+            aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region us-east-1 --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
 
             echo "🛠️ Construyendo imagen Docker..."
             sudo docker build -t "$IMAGE_NAME" .
