@@ -34,6 +34,8 @@ on:
         required: true
       EC2_USER:
         required: true
+      AWS_SECRET_ARN:
+        required: true
 
 jobs:
   deploy:
