@@ -75,7 +75,7 @@ on:
 
 jobs:
   deploy:
-    uses: PigBallARSW/central-pipelines/.github/workflows/deploy.yml@V0.2.2
+    uses: PigBallARSW/central-pipelines/.github/workflows/deploy.yml@V0.2.3
     with:
       PROJECT_NAME: "Mi-Proyecto-EC2"       # Nombre de la carpeta/proyecto en la instancia EC2
       IMAGE_NAME: "my-app"                  # Nombre de la imagen Docker
