@@ -57,30 +57,30 @@ jobs:
             echo "🚀 Forzando actualización del código..."
             if [ -d ~/"\$PROJECT_NAME" ]; then
               cd ~/"\$PROJECT_NAME"
-              git fetch --all
-              git reset --hard origin/\$BRANCH
+              sudo git fetch --all
+              sudo git reset --hard origin/\$BRANCH
             else
               cd ~
-              git clone "\$REPO_URL" "\$PROJECT_NAME"
+              sudo git clone "\$REPO_URL" "\$PROJECT_NAME"
               cd "\$PROJECT_NAME"
-              git checkout \$BRANCH
+              sudo git checkout \$BRANCH
             fi
 
             echo "🔄 Reemplazando el keystore..."
-            cp ~/ecikeystore.p12 ~/"\$PROJECT_NAME"/src/main/resources/ecikeystore.p12
+            sudo cp ~/ecikeystore.p12 ~/"\$PROJECT_NAME"/src/main/resources/ecikeystore.p12
 
             echo "📚 Obteniendo secretos..."
-            aws secretsmanager get-secret-value --secret-id "${{ secrets.AWS_SECRET_ARN }}" --region us-east-1 --query SecretString --output text  | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' > .env
+            sudo aws secretsmanager get-secret-value --secret-id "${{ secrets.AWS_SECRET_ARN }}" --region us-east-1 --query SecretString --output text  | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' > .env
 
             echo "🛠️ Construyendo imagen Docker..."
-            docker build -t \$IMAGE_NAME .
+            sudo docker build -t \$IMAGE_NAME .
 
             echo "🚫 Deteniendo contenedor previo..."
-            docker stop \$CONTAINER_NAME || true
-            docker rm \$CONTAINER_NAME || true
+            sudo docker stop \$CONTAINER_NAME || true
+            sudo docker rm \$CONTAINER_NAME || true
 
             echo "🚀 Ejecutando nuevo contenedor..."
-            docker run -d --name \$CONTAINER_NAME --env-file .env -p \$PORT:\$PORT \$IMAGE_NAME
+            sudo docker run -d --name \$CONTAINER_NAME --env-file .env -p \$PORT:\$PORT \$IMAGE_NAME
 
             echo "🎉 Despliegue exitoso en EC2"
           EOF
