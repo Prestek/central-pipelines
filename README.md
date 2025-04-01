@@ -4,8 +4,8 @@ Central pipelines para trabajar con Spring Boot, SonarCloud y AWS.
 
 Este repositorio contiene pipelines reutilizables que facilitan la integración y despliegue de tus proyectos. Actualmente se incluyen:
 
-- **Pipeline para SonarCloud:** Integración de SonarCloud en tus proyectos.
-- **Pipeline para despliegue automático en EC2 (release 0.2.0):** Automatiza el despliegue de tu aplicación en una instancia EC2.
+- **Pipeline para SonarCloud (release 0.1.1):** Integración de SonarCloud en tus proyectos.
+- **Pipeline para despliegue automático en EC2 (release 0.2.1):** Automatiza el despliegue de tu aplicación en una instancia EC2.
 
 ---
 
