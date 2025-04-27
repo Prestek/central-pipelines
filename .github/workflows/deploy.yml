@@ -70,6 +70,8 @@ jobs:
             sudo yum install -y git docker jq
             sudo service docker start
 
+            sudo docker system prune -f
+
             echo "🚀 Forzando actualización del código..."
             if [ -d ~/"$PROJECT_NAME/.git" ]; then
               echo "📂 El proyecto ya existe. Actualizando..."
