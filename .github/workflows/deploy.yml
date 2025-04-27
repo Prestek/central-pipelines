@@ -67,7 +67,7 @@ jobs:
             echo "🔄 Actualizando el sistema e instalando Git y Docker..."
             # Comandos para Amazon Linux; ajusta si usas otro sistema
             sudo yum update -y
-            sudo yum install -y git docker
+            sudo yum install -y git docker jq
             sudo service docker start
 
             echo "🚀 Forzando actualización del código..."
