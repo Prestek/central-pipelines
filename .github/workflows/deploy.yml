@@ -27,6 +27,11 @@ on:
         description: 'Git branch to deploy'
         required: true
         type: string
+      AWS_REGION:
+        description: 'AWS Region for Secrets Manager'
+        required: false
+        type: string
+        default: 'us-east-1'
     secrets:
       EC2_SSH_KEY:
         required: true
@@ -57,6 +62,7 @@ jobs:
           REPO_URL: ${{ inputs.REPO_URL }}
           PROJECT_NAME: ${{ inputs.PROJECT_NAME }}
           BRANCH: ${{ inputs.BRANCH }}
+          AWS_REGION: ${{ inputs.AWS_REGION || 'us-east-1' }}
         run: |
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
@@ -97,7 +103,7 @@ jobs:
             fi
 
             echo "📚 Obteniendo secretos..."
-            sudo aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region us-east-1 --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
+            sudo aws secretsmanager get-secret-value --secret-id "$AWS_SECRET_ARN" --region "$AWS_REGION" --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | sudo tee .env > /dev/null
 
             echo "🛠️ Construyendo imagen Docker..."
             sudo docker build -t "$IMAGE_NAME" .
