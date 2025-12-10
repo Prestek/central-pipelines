@@ -51,7 +51,6 @@ jobs:
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
         run: |
-          npm run build
           npx sonarqube-scanner \
             -Dsonar.organization=$SONAR_ORGANIZATION \
             -Dsonar.projectKey=$SONAR_PROJECT_KEY \
