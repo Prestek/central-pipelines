@@ -1,0 +1,72 @@
+name: SonarCloud Analysis for React
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: '18'
+      branch-name:
+        required: false
+        type: string
+        default: 'main'
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SONAR_ORGANIZATION:
+        required: true
+      SONAR_PROJECT_KEY:
+        required: true
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Evita el shallow clone
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Run SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: |
+          npm run build
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORGANIZATION \
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ inputs.branch-name }} \
+            -Dsonar.token=$SONAR_TOKEN
+
+      - name: Wait for SonarCloud Quality Gate
+        run: |
+          sleep 20
+          SONAR_STATUS=$(curl -s -u $SONAR_TOKEN: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}" | jq -r .projectStatus.status)
+          echo "SonarCloud Quality Gate Status: $SONAR_STATUS"
+          if [[ "$SONAR_STATUS" != "OK" ]]; then
+            echo "❌ Quality Gate failed. PR cannot be merged."
+            exit 1
+          fi
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
